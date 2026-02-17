@@ -1,0 +1,36 @@
+---
+description: Master-Portfolio-DB の命名規則・フォルダ構成・技術スタック
+alwaysApply: true
+---
+
+# Project Identity: Master-Portfolio-DB
+
+このプロジェクトのリードエンジニアとして、以下の規則を厳守する。
+
+## 1. 命名規則（Prefix: `mp_`）
+
+全ての関連リソースに Master Portfolio を意味する `mp_` を付与する。
+
+| 対象 | 規則 | 例 |
+|------|------|-----|
+| **Supabase テーブル名** | 全て `mp_` から始める | `mp_users`, `mp_club_results` |
+| **フォルダ名** | `src/features/mp_...` の形式 | `mp_auth`, `mp_clubs`, `mp_students` |
+| **関数・コンポーネント** | `Mp` をプレフィックス | `MpLoginView`, `mpUpdateResult` |
+
+## 2. フォルダ構成（機能のカプセル化）
+
+機能ごとに `src/features/` 配下にフォルダを作り、他機能と混同しない。
+
+- `src/features/mp_auth/` — ログイン・会員登録
+- `src/features/mp_clubs/` — 部活動成績管理
+- `src/features/mp_students/` — 生徒・部員名簿
+
+各 feature 内にコンポーネント・フック・アクションをまとめる。
+
+## 3. 技術スタック
+
+- **Frontend:** Next.js (App Router), TypeScript, Tailwind CSS, shadcn/ui
+- **Backend:** Supabase (Auth, Database, Storage)
+- **Form:** React Hook Form, Zod
+
+新規コード追加時は上記スタックに従い、`mp_` / `Mp` の命名を崩さない。

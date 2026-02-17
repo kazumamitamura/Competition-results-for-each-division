@@ -1,0 +1,154 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =============================================================================
+   Master-Portfolio-DB: Competition Results (mp_) スタイル
+   他のアプリと干渉しないよう、mp- プレフィックスで隔離
+   ============================================================================= */
+
+/* レイアウト */
+.mp-app-container {
+  @apply w-full;
+}
+
+.mp-competition-results-page {
+  @apply min-h-screen bg-neutral-50;
+}
+
+.mp-competition-results-layout {
+  @apply flex gap-4 p-4 max-w-7xl mx-auto;
+}
+
+.mp-competition-results-main {
+  @apply flex-1;
+}
+
+.mp-competition-results-sidebar {
+  @apply w-80 flex-shrink-0;
+}
+
+/* サイドバー（部員名簿） */
+.mp-student-sidebar {
+  @apply bg-white rounded-lg border border-neutral-200 shadow-sm p-4 h-fit max-h-[calc(100vh-2rem)] overflow-y-auto;
+}
+
+.mp-student-sidebar-header {
+  @apply flex items-center justify-between mb-4 pb-2 border-b border-neutral-200;
+}
+
+.mp-student-sidebar-title {
+  @apply text-lg font-semibold text-neutral-900;
+}
+
+.mp-student-sidebar-count {
+  @apply text-sm text-blue-600 font-medium;
+}
+
+.mp-student-sidebar-loading,
+.mp-student-sidebar-empty {
+  @apply text-sm text-neutral-500 py-4 text-center;
+}
+
+.mp-student-sidebar-error {
+  @apply text-sm text-red-600 py-4 px-3 bg-red-50 rounded border border-red-200;
+}
+
+.mp-student-sidebar-list {
+  @apply space-y-1;
+}
+
+.mp-student-sidebar-item {
+  @apply list-none;
+}
+
+.mp-student-sidebar-button {
+  @apply w-full text-left px-3 py-2 rounded-md border border-neutral-200 hover:bg-neutral-50 hover:border-blue-300 transition-colors flex items-center justify-between gap-2;
+}
+
+.mp-student-sidebar-button-selected {
+  @apply bg-blue-50 border-blue-400 text-blue-900;
+}
+
+.mp-student-sidebar-name {
+  @apply font-medium text-neutral-900;
+}
+
+.mp-student-sidebar-grade {
+  @apply text-xs text-neutral-500;
+}
+
+.mp-student-sidebar-check {
+  @apply text-blue-600 font-bold;
+}
+
+/* フォーム */
+.mp-result-form {
+  @apply bg-white rounded-lg border border-neutral-200 shadow-sm p-6;
+}
+
+.mp-result-form-title {
+  @apply text-xl font-semibold text-neutral-900 mb-4;
+}
+
+.mp-result-form-toggle {
+  @apply flex gap-2 mb-6 p-1 bg-neutral-100 rounded-lg;
+}
+
+.mp-result-form-toggle-button {
+  @apply flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors;
+  @apply text-neutral-600 hover:text-neutral-900;
+}
+
+.mp-result-form-toggle-button-active {
+  @apply bg-white text-blue-600 shadow-sm;
+}
+
+.mp-result-form-form {
+  @apply space-y-4;
+}
+
+.mp-result-form-field {
+  @apply space-y-1;
+}
+
+.mp-result-form-label {
+  @apply block text-sm font-medium text-neutral-700;
+}
+
+.mp-result-form-input,
+.mp-result-form-textarea {
+  @apply w-full px-3 py-2 border border-neutral-300 rounded-md text-neutral-900;
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+}
+
+.mp-result-form-textarea {
+  @apply resize-y;
+}
+
+.mp-result-form-error-text {
+  @apply text-sm text-red-600;
+}
+
+.mp-result-form-error {
+  @apply px-4 py-3 bg-red-50 border border-red-200 text-red-800 rounded-md text-sm;
+}
+
+.mp-result-form-success {
+  @apply px-4 py-3 bg-green-50 border border-green-200 text-green-800 rounded-md text-sm;
+}
+
+.mp-result-form-submit {
+  @apply w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-md;
+  @apply hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+  @apply disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.mp-result-form-loading {
+  @apply text-center py-8 text-neutral-500;
+}
+
+/* エラーページ */
+.mp-competition-results-error {
+  @apply max-w-2xl mx-auto mt-8 p-6 bg-red-50 border border-red-200 text-red-800 rounded-lg;
+}

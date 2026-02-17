@@ -1,0 +1,24 @@
+---
+description: 大会成績(mp_) の Shield ルール — 既存機能を破壊・干渉しない
+alwaysApply: true
+---
+
+# Project Shield Rules: Competition Results (mp_)
+
+マルチアプリ構成のため、他の機能（既存テーブル・ファイル）を**破壊・干渉しない**よう厳守する。
+
+## 1. ネーミング・分離の原則
+
+- **接頭語:** 独自のテーブル・フォルダ・コンポーネント・定数・型には必ず `mp_` を付与する。
+- **データベース:** テーブル名は必ず `mp_` から開始。`users` / `profiles` と混同せず `mp_user_profiles` を使用する。
+- **ディレクトリの隔離:** 大会成績のロジックは全て `src/features/mp_competition_results/` 内に閉じ込める。共有の `components` / `hooks` は極力触れず、必要なら機能フォルダ内に独自に作成する。
+
+## 2. 既存ファイルへの影響最小化
+
+- `app/layout.tsx` や `globals.css` などグローバルなファイルを変更する場合は、**既存スタイルを壊さない**よう、新しいクラス名にも **`mp-`** 接頭語を使う（例: `mp-card`, `mp-result-table`）。
+
+## 3. 技術スタック
+
+- Next.js App Router, Tailwind CSS, Lucide React, Supabase, shadcn/ui
+
+新規テーブル・コンポーネント追加時は上記を満たし、既存の `mp_auth` 等のリソースと名前・パスが衝突しないようにする。
