@@ -3,30 +3,24 @@
 import { createClient } from "@/lib/supabase/server";
 
 /**
- * RPC get_unique_club_names を呼び出し、部活名の一覧を取得
+ * 正規化テーブル mp_clubs から部活名の一覧を取得（名前順・昇順）
  */
 export async function getUniqueClubNames(): Promise<string[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("get_unique_club_names");
+  const { data, error } = await supabase
+    .from("mp_clubs")
+    .select("club_name")
+    .order("club_name", { ascending: true });
 
   if (error) {
-    console.error("get_unique_club_names error:", error);
+    console.error("mp_clubs fetch error:", error);
     return [];
   }
 
   if (!Array.isArray(data)) return [];
   return data
-    .map((row: unknown) => {
-      if (typeof row === "string") return row;
-      if (row && typeof row === "object" && "get_unique_club_names" in row) {
-        return String((row as { get_unique_club_names: string }).get_unique_club_names);
-      }
-      if (row && typeof row === "object" && typeof (row as Record<string, unknown>).club_name === "string") {
-        return String((row as { club_name: string }).club_name);
-      }
-      return String(row);
-    })
-    .filter(Boolean);
+    .map((row: { club_name: string | null }) => row?.club_name)
+    .filter((name): name is string => typeof name === "string" && name.length > 0);
 }
 
 /**

@@ -11,8 +11,21 @@ export interface MpStudent {
   last_kana: string | null;
   first_kana: string | null;
   club_name: string;
+  /** 兼部時の第2所属 */
+  club_name_2: string | null;
   created_at: string;
   updated_at: string;
+}
+
+/** 生徒追加・編集フォーム用 */
+export interface MpStudentFormData {
+  grade_class_num: string;
+  last_name: string;
+  first_name: string;
+  last_kana: string;
+  first_kana: string;
+  club_name: string;
+  club_name_2: string; // 空文字で「なし」
 }
 
 export interface MpCompetitionResult {

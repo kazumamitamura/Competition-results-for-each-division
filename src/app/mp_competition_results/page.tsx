@@ -2,6 +2,7 @@ import Link from "next/link";
 import { MpStudentSelectionProvider } from "@/features/mp_competition_results/MpStudentSelectionContext";
 import { MpResultForm } from "@/features/mp_competition_results/MpResultForm";
 import { MpStudentSidebar } from "@/features/mp_competition_results/MpStudentSidebar";
+import { getUniqueClubNames } from "@/features/mp_competition_results/actions/mpUserActions";
 import { mpGetCurrentProfile } from "@/features/mp_auth/server";
 import { redirect } from "next/navigation";
 
@@ -27,6 +28,8 @@ export default async function MpCompetitionResultsPage() {
     );
   }
 
+  const clubOptions = await getUniqueClubNames();
+
   return (
     <MpStudentSelectionProvider>
       <div className="mp-app-container mp-competition-results-page">
@@ -40,7 +43,10 @@ export default async function MpCompetitionResultsPage() {
             <MpResultForm />
           </main>
           <aside className="mp-competition-results-sidebar">
-            <MpStudentSidebar />
+            <MpStudentSidebar
+              clubOptions={clubOptions}
+              assignedClub={profile.assigned_club}
+            />
           </aside>
         </div>
       </div>

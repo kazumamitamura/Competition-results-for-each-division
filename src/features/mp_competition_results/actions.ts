@@ -21,10 +21,11 @@ export async function mpGetStudents(): Promise<MpStudent[]> {
 
   if (!profile?.assigned_club) return [];
 
+  const assigned = profile.assigned_club;
   const { data: students } = await supabase
     .from("mp_students")
     .select("*")
-    .eq("club_name", profile.assigned_club)
+    .or(`club_name.eq.${assigned},club_name_2.eq.${assigned}`)
     .order("last_kana", { ascending: true, nullsFirst: false })
     .order("first_kana", { ascending: true, nullsFirst: false });
 
