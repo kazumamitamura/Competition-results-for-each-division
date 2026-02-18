@@ -399,3 +399,97 @@
 .mp-assign-modal-page-num {
   @apply text-sm text-neutral-600;
 }
+
+/* ダッシュボード (mp_) */
+.mp-dashboard-page {
+  @apply min-h-screen bg-neutral-50;
+}
+
+.mp-dashboard-header {
+  @apply border-b border-neutral-200 bg-white px-4 py-3 flex items-center gap-4;
+}
+
+.mp-dashboard-back {
+  @apply text-neutral-600 hover:text-neutral-900 text-sm font-medium transition-colors;
+}
+
+.mp-dashboard-title {
+  @apply text-xl font-semibold text-neutral-900;
+}
+
+.mp-dashboard-layout {
+  @apply flex gap-4 p-4 max-w-7xl mx-auto;
+}
+
+.mp-dashboard-filters {
+  @apply w-64 flex-shrink-0 bg-white rounded-lg border border-neutral-200 shadow-sm p-4 h-fit;
+}
+
+.mp-dashboard-filters-title {
+  @apply text-lg font-semibold text-neutral-900 mb-4;
+}
+
+.mp-dashboard-filters-content {
+  @apply space-y-4;
+}
+
+.mp-dashboard-filter-field {
+  @apply space-y-1;
+}
+
+.mp-dashboard-filter-label {
+  @apply block text-sm font-medium text-neutral-700;
+}
+
+.mp-dashboard-filter-input {
+  @apply w-full rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500;
+}
+
+.mp-dashboard-main {
+  @apply flex-1 bg-white rounded-lg border border-neutral-200 shadow-sm p-4;
+}
+
+.mp-dashboard-header-actions {
+  @apply flex items-center justify-between mb-4;
+}
+
+.mp-dashboard-results-title {
+  @apply text-lg font-semibold text-neutral-900;
+}
+
+.mp-dashboard-export-btn {
+  @apply px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.mp-dashboard-loading,
+.mp-dashboard-empty {
+  @apply py-8 text-center text-neutral-500 text-sm;
+}
+
+.mp-dashboard-error {
+  @apply py-4 px-3 bg-red-50 border border-red-200 text-red-800 rounded-md text-sm;
+}
+
+.mp-dashboard-table-wrap {
+  @apply overflow-x-auto;
+}
+
+.mp-dashboard-table {
+  @apply w-full border-collapse text-sm;
+}
+
+.mp-dashboard-table thead {
+  @apply bg-neutral-100;
+}
+
+.mp-dashboard-table th {
+  @apply px-4 py-2 text-left font-semibold text-neutral-700 border-b border-neutral-200;
+}
+
+.mp-dashboard-table td {
+  @apply px-4 py-2 border-b border-neutral-100 text-neutral-900;
+}
+
+.mp-dashboard-table tbody tr:hover {
+  @apply bg-neutral-50;
+}
