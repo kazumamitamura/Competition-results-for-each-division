@@ -35,6 +35,7 @@ export interface MpCompetitionResult {
   competition_name: string | null;
   division: "team" | "individual";
   payload: MpCompetitionPayload;
+  special_prizes?: string;
   created_at: string;
   updated_at: string;
 }

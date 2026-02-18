@@ -7,12 +7,16 @@ import { mpSaveCompetitionResult } from "./actions";
 import { useMpProfile } from "@/features/mp_auth";
 import type { MpTeamPayload, MpIndividualPayload } from "./types";
 
+const INITIAL_MEMBER_ROWS = 5;
+const MAX_MEMBER_ROWS = 20;
+
 type MpDivision = "team" | "individual";
 
 interface MpResultFormData {
   competitionName: string;
   division: MpDivision;
-  members: string; // 「三村(3-1), 友野(3-2)」形式
+  members: string[]; // メンバー名の配列
+  specialPrizes?: string; // 特別賞 / 備考
   score?: string;
   rank?: string;
   opponent?: string;
@@ -21,11 +25,14 @@ interface MpResultFormData {
 
 export function MpResultForm() {
   const { profile, assignedClub, isLoading: profileLoading } = useMpProfile();
-  const { selectedStudents, formatAllSelected, clearSelection } =
+  const { selectedStudents, formatStudentForForm, clearSelection } =
     useMpStudentSelection();
   const [division, setDivision] = useState<MpDivision>("team");
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [memberRows, setMemberRows] = useState<string[]>(
+    Array(INITIAL_MEMBER_ROWS).fill("")
+  );
 
   const {
     register,
@@ -38,7 +45,8 @@ export function MpResultForm() {
     defaultValues: {
       competitionName: "",
       division: "team",
-      members: "",
+      members: Array(INITIAL_MEMBER_ROWS).fill(""),
+      specialPrizes: "",
       score: "",
       rank: "",
       opponent: "",
@@ -46,27 +54,62 @@ export function MpResultForm() {
     },
   });
 
-  // 選択した生徒をメンバー欄に自動挿入
+  // 選択した生徒をメンバー欄に自動挿入（上から順に空欄を埋める）
   useEffect(() => {
     if (selectedStudents.length > 0) {
-      const formatted = formatAllSelected();
-      setValue("members", formatted);
+      const currentMembers = watch("members") || [];
+      const newMembers = [...currentMembers];
+      let insertIndex = 0;
+      for (const student of selectedStudents) {
+        const formatted = formatStudentForForm(student);
+        // 空欄を探して埋める
+        while (insertIndex < newMembers.length && newMembers[insertIndex]?.trim()) {
+          insertIndex++;
+        }
+        if (insertIndex < MAX_MEMBER_ROWS) {
+          if (insertIndex >= newMembers.length) {
+            newMembers.push(formatted);
+          } else {
+            newMembers[insertIndex] = formatted;
+          }
+          insertIndex++;
+        }
+      }
+      setValue("members", newMembers);
+      setMemberRows(newMembers);
     }
-  }, [selectedStudents, formatAllSelected, setValue]);
+  }, [selectedStudents, formatStudentForForm, setValue, watch]);
 
   // 団体/個人切り替え時にフォームをリセット
   useEffect(() => {
+    const emptyMembers = Array(INITIAL_MEMBER_ROWS).fill("");
     reset({
       competitionName: watch("competitionName"),
       division,
-      members: "",
+      members: emptyMembers,
+      specialPrizes: "",
       score: "",
       rank: "",
       opponent: "",
       round: "",
     });
+    setMemberRows(emptyMembers);
     clearSelection();
   }, [division, reset, watch, clearSelection]);
+
+  const addMemberRow = () => {
+    if (memberRows.length >= MAX_MEMBER_ROWS) return;
+    const newRows = [...memberRows, ""];
+    setMemberRows(newRows);
+    setValue("members", newRows);
+  };
+
+  const updateMemberRow = (index: number, value: string) => {
+    const newRows = [...memberRows];
+    newRows[index] = value;
+    setMemberRows(newRows);
+    setValue("members", newRows);
+  };
 
   async function onSubmit(data: MpResultFormData) {
     if (!assignedClub) {
@@ -77,15 +120,16 @@ export function MpResultForm() {
     setSubmitError(null);
     setSubmitSuccess(false);
 
+    // メンバー名の配列をフィルタ（空文字を除外）
+    const membersArray = (data.members || []).map((m) => m.trim()).filter(Boolean);
+    if (membersArray.length === 0) {
+      setSubmitError("メンバーを1名以上入力してください");
+      return;
+    }
+
     let payload: MpTeamPayload | MpIndividualPayload;
 
     if (division === "team") {
-      // 団体戦: members を配列に分割
-      const membersArray = data.members
-        .split("、")
-        .map((m) => m.trim())
-        .filter(Boolean);
-
       payload = {
         type: "team",
         members: membersArray,
@@ -96,15 +140,11 @@ export function MpResultForm() {
       };
     } else {
       // 個人戦: members を個別エントリに分割
-      const entries = data.members
-        .split("、")
-        .map((m) => m.trim())
-        .filter(Boolean)
-        .map((studentName) => ({
-          student_name: studentName,
-          score: data.score || undefined,
-          rank: data.rank || undefined,
-        }));
+      const entries = membersArray.map((studentName) => ({
+        student_name: studentName,
+        score: data.score || undefined,
+        rank: data.rank || undefined,
+      }));
 
       payload = {
         type: "individual",
@@ -116,7 +156,8 @@ export function MpResultForm() {
       data.competitionName,
       division,
       payload,
-      assignedClub
+      assignedClub,
+      data.specialPrizes?.trim() || undefined
     );
 
     if (result.error) {
@@ -125,7 +166,18 @@ export function MpResultForm() {
     }
 
     setSubmitSuccess(true);
-    reset();
+    const emptyMembers = Array(INITIAL_MEMBER_ROWS).fill("");
+    reset({
+      competitionName: "",
+      division,
+      members: emptyMembers,
+      specialPrizes: "",
+      score: "",
+      rank: "",
+      opponent: "",
+      round: "",
+    });
+    setMemberRows(emptyMembers);
     clearSelection();
     setTimeout(() => setSubmitSuccess(false), 3000);
   }
@@ -206,24 +258,49 @@ export function MpResultForm() {
           )}
         </div>
 
+        {/* 出場メンバー入力セクション */}
+        <div className="mp-result-form-section">
+          <label className="mp-result-form-label">出場メンバー</label>
+          <div className="mp-result-form-members-list">
+            {memberRows.map((member, index) => (
+              <div key={index} className="mp-result-form-member-row">
+                <span className="mp-result-form-member-number">{index + 1}.</span>
+                <input
+                  type="text"
+                  value={member}
+                  onChange={(e) => updateMemberRow(index, e.target.value)}
+                  className="mp-result-form-input mp-result-form-member-input"
+                  placeholder="名前を入力"
+                />
+              </div>
+            ))}
+          </div>
+          {memberRows.length < MAX_MEMBER_ROWS && (
+            <button
+              type="button"
+              onClick={addMemberRow}
+              className="mp-result-form-add-member-btn"
+            >
+              ＋ メンバーを追加
+            </button>
+          )}
+          {memberRows.length >= MAX_MEMBER_ROWS && (
+            <p className="mp-result-form-member-limit">（最大{MAX_MEMBER_ROWS}名まで）</p>
+          )}
+        </div>
+
+        {/* 特別賞 / 備考入力セクション */}
         <div className="mp-result-form-field">
-          <label htmlFor="mp-members" className="mp-result-form-label">
-            メンバー（右側の名簿から選択すると自動入力されます）
+          <label htmlFor="mp-special-prizes" className="mp-result-form-label">
+            特別賞 / 備考 (MVPなど)
           </label>
           <textarea
-            id="mp-members"
-            rows={3}
+            id="mp-special-prizes"
+            rows={4}
             className="mp-result-form-textarea"
-            placeholder="三村(2-1-15)、友野(3-2-8)"
-            {...register("members", {
-              required: "メンバーを入力してください",
-            })}
+            placeholder="MVP: 田中太郎, 敢闘賞: 鈴木一郎"
+            {...register("specialPrizes")}
           />
-          {errors.members && (
-            <span className="mp-result-form-error-text">
-              {errors.members.message}
-            </span>
-          )}
         </div>
 
         {division === "team" && (

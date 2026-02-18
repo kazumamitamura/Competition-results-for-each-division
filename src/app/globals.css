@@ -148,8 +148,36 @@
   @apply space-y-1;
 }
 
+.mp-result-form-section {
+  @apply space-y-2;
+}
+
 .mp-result-form-label {
   @apply block text-sm font-medium text-neutral-700;
+}
+
+.mp-result-form-members-list {
+  @apply space-y-2;
+}
+
+.mp-result-form-member-row {
+  @apply flex items-center gap-2;
+}
+
+.mp-result-form-member-number {
+  @apply w-6 text-sm text-neutral-500 font-medium;
+}
+
+.mp-result-form-member-input {
+  @apply flex-1;
+}
+
+.mp-result-form-add-member-btn {
+  @apply mt-2 px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 border border-blue-300 rounded-md hover:bg-blue-50;
+}
+
+.mp-result-form-member-limit {
+  @apply mt-2 text-xs text-neutral-500;
 }
 
 .mp-result-form-input,
