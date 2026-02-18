@@ -91,10 +91,7 @@ export function MpStudentSidebar({ clubOptions, assignedClub }: MpStudentSidebar
                 >
                   <span className="mp-student-sidebar-name-block">
                     <span className="mp-student-sidebar-name">
-                      <span className="mp-student-sidebar-grade">
-                        ({student.grade_class_num})
-                      </span>{" "}
-                      {student.last_name} {student.first_name}
+                      {student.grade_class_num} {student.last_name} {student.first_name}
                     </span>
                     {(student.club_name || student.club_name_2) && (
                       <span className="mp-student-sidebar-clubs">

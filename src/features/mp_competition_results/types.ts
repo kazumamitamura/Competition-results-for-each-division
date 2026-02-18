@@ -57,7 +57,8 @@ export interface MpTeamPayload {
 export interface MpIndividualPayload {
   type: "individual";
   entries: Array<{
-    student_name: string; // 「三村(3-1)」形式
+    student_name: string; // 「grade_class_num last_name first_name」形式
+    result?: string; // 個人成績（例: 優勝, 2回戦敗退）
     score?: string;
     rank?: string;
     [key: string]: unknown;

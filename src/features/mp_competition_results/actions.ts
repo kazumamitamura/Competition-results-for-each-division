@@ -76,3 +76,67 @@ export async function mpSaveCompetitionResult(
   if (error) return { error: error.message };
   return { data: data as MpCompetitionResult };
 }
+
+/**
+ * 個人戦の成績を複数レコードとして保存（1人1レコード）
+ */
+export async function mpSaveIndividualCompetitionResults(
+  competitionName: string,
+  entries: Array<{ studentId: string; studentName: string; result: string }>,
+  clubName: string,
+  specialPrizes?: string
+): Promise<{ error?: string; saved?: number }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "ログインが必要です" };
+
+  if (entries.length === 0) {
+    return { error: "出場選手を1名以上入力してください" };
+  }
+
+  const insertData = entries
+    .filter((e) => e.studentName.trim() && e.result.trim())
+    .map((entry) => {
+      const payload: MpCompetitionResult["payload"] = {
+        type: "individual",
+        entries: [
+          {
+            student_name: entry.studentName.trim(),
+            result: entry.result.trim(),
+          },
+        ],
+      };
+
+      const row: {
+        profile_id: string;
+        club_name: string;
+        competition_name: string;
+        division: "individual";
+        payload: MpCompetitionResult["payload"];
+        special_prizes?: string;
+      } = {
+        profile_id: user.id,
+        club_name: clubName,
+        competition_name: competitionName,
+        division: "individual",
+        payload,
+      };
+
+      if (specialPrizes?.trim()) {
+        row.special_prizes = specialPrizes.trim();
+      }
+
+      return row;
+    });
+
+  if (insertData.length === 0) {
+    return { error: "有効な出場選手と成績を入力してください" };
+  }
+
+  const { error } = await supabase.from("mp_competition_results").insert(insertData);
+
+  if (error) return { error: error.message };
+  return { saved: insertData.length };
+}

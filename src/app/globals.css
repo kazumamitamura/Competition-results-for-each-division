@@ -180,6 +180,31 @@
   @apply mt-2 text-xs text-neutral-500;
 }
 
+/* 個人戦用のスタイル */
+.mp-result-form-individual-list {
+  @apply space-y-2;
+}
+
+.mp-result-form-individual-row {
+  @apply flex items-center gap-2;
+}
+
+.mp-result-form-individual-number {
+  @apply w-6 text-sm text-neutral-500 font-medium;
+}
+
+.mp-result-form-individual-name {
+  @apply flex-1;
+}
+
+.mp-result-form-individual-result {
+  @apply flex-1;
+}
+
+.mp-result-form-individual-remove {
+  @apply w-8 h-8 rounded text-neutral-500 hover:bg-red-100 hover:text-red-700 text-lg leading-none flex items-center justify-center;
+}
+
 .mp-result-form-input,
 .mp-result-form-textarea {
   @apply w-full px-3 py-2 border border-neutral-300 rounded-md text-neutral-900;
