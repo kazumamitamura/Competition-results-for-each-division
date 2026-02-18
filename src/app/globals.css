@@ -16,6 +16,14 @@
   @apply min-h-screen bg-neutral-50;
 }
 
+.mp-competition-results-header {
+  @apply border-b border-neutral-200 bg-white px-4 py-3;
+}
+
+.mp-competition-results-back {
+  @apply text-neutral-600 hover:text-neutral-900 text-sm font-medium transition-colors;
+}
+
 .mp-competition-results-layout {
   @apply flex gap-4 p-4 max-w-7xl mx-auto;
 }
