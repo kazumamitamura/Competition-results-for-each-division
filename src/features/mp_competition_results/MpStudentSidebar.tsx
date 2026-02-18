@@ -2,23 +2,20 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { mpGetStudents } from "./actions";
-import { mpDeleteStudent } from "./actions/mpStudentActions";
 import { useMpStudentSelection } from "./MpStudentSelectionContext";
-import { MpStudentModal } from "./MpStudentModal";
+import { StudentAssignmentModal } from "./StudentAssignmentModal";
 import type { MpStudent } from "./types";
 
 interface MpStudentSidebarProps {
   clubOptions: string[];
-  assignedClub: string;
+  assignedClub: string | null;
 }
 
 export function MpStudentSidebar({ clubOptions, assignedClub }: MpStudentSidebarProps) {
   const [students, setStudents] = useState<MpStudent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalMode, setModalMode] = useState<"add" | "edit">("add");
-  const [editingStudent, setEditingStudent] = useState<MpStudent | null>(null);
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
   const { selectedStudents, addStudent, removeStudent } = useMpStudentSelection();
 
   const loadStudents = useCallback(async () => {
@@ -38,33 +35,6 @@ export function MpStudentSidebar({ clubOptions, assignedClub }: MpStudentSidebar
     loadStudents();
   }, [loadStudents]);
 
-  const handleOpenAdd = () => {
-    setEditingStudent(null);
-    setModalMode("add");
-    setModalOpen(true);
-  };
-
-  const handleOpenEdit = (e: React.MouseEvent, student: MpStudent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setEditingStudent(student);
-    setModalMode("edit");
-    setModalOpen(true);
-  };
-
-  const handleDelete = async (e: React.MouseEvent, studentId: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!confirm("この生徒を削除してもよろしいですか？")) return;
-    const result = await mpDeleteStudent(studentId);
-    if (result.error) {
-      setError(result.error);
-      return;
-    }
-    removeStudent(studentId);
-    loadStudents();
-  };
-
   const isSelected = (studentId: string) =>
     selectedStudents.some((s) => s.id === studentId);
 
@@ -80,7 +50,7 @@ export function MpStudentSidebar({ clubOptions, assignedClub }: MpStudentSidebar
           )}
           <button
             type="button"
-            onClick={handleOpenAdd}
+            onClick={() => setAssignModalOpen(true)}
             className="mp-student-sidebar-add-button"
           >
             ＋ 追加
@@ -100,7 +70,7 @@ export function MpStudentSidebar({ clubOptions, assignedClub }: MpStudentSidebar
 
       {!isLoading && !error && students.length === 0 && (
         <div className="mp-student-sidebar-empty">
-          部員データがありません。「＋ 追加」から登録してください。
+          部員データがありません。「＋ 追加」から部活に割り当ててください。
         </div>
       )}
 
@@ -132,27 +102,7 @@ export function MpStudentSidebar({ clubOptions, assignedClub }: MpStudentSidebar
                       </span>
                     )}
                   </span>
-                  <span className="mp-student-sidebar-actions">
-                    <button
-                      type="button"
-                      onClick={(e) => handleOpenEdit(e, student)}
-                      className="mp-student-sidebar-icon-button"
-                      title="編集"
-                      aria-label="編集"
-                    >
-                      ✎
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(e) => handleDelete(e, student.id)}
-                      className="mp-student-sidebar-icon-button mp-student-sidebar-icon-button-delete"
-                      title="削除"
-                      aria-label="削除"
-                    >
-                      ×
-                    </button>
-                    {selected && <span className="mp-student-sidebar-check">✓</span>}
-                  </span>
+                  {selected && <span className="mp-student-sidebar-check">✓</span>}
                 </button>
               </li>
             );
@@ -160,11 +110,9 @@ export function MpStudentSidebar({ clubOptions, assignedClub }: MpStudentSidebar
         </ul>
       )}
 
-      <MpStudentModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        mode={modalMode}
-        initialData={editingStudent}
+      <StudentAssignmentModal
+        open={assignModalOpen}
+        onClose={() => setAssignModalOpen(false)}
         clubOptions={clubOptions}
         assignedClub={assignedClub}
         onSuccess={loadStudents}

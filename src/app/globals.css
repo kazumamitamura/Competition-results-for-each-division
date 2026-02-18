@@ -245,3 +245,129 @@
 .mp-modal-button-primary {
   @apply bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 disabled:opacity-50;
 }
+
+/* 部活割り当てモーダル (mp_) 全画面・大型 */
+.mp-assign-modal-overlay {
+  @apply fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-auto;
+}
+
+.mp-assign-modal {
+  @apply w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col rounded-lg bg-white shadow-xl;
+}
+
+.mp-assign-modal-header {
+  @apply flex items-center justify-between px-4 py-3 border-b border-neutral-200 flex-shrink-0;
+}
+
+.mp-assign-modal-title {
+  @apply text-lg font-semibold text-neutral-900;
+}
+
+.mp-assign-modal-close {
+  @apply w-8 h-8 rounded text-neutral-500 hover:bg-neutral-100 text-xl leading-none;
+}
+
+.mp-assign-modal-tabs {
+  @apply flex border-b border-neutral-200 flex-shrink-0;
+}
+
+.mp-assign-modal-tab {
+  @apply px-4 py-3 text-sm font-medium text-neutral-600 hover:text-neutral-900;
+}
+
+.mp-assign-modal-tab-active {
+  @apply text-blue-600 border-b-2 border-blue-600;
+}
+
+.mp-assign-modal-msg {
+  @apply mx-4 mt-2 px-3 py-2 rounded text-sm flex-shrink-0;
+}
+
+.mp-assign-modal-msg-ok {
+  @apply bg-green-50 text-green-800 border border-green-200;
+}
+
+.mp-assign-modal-msg-err {
+  @apply bg-red-50 text-red-800 border border-red-200;
+}
+
+.mp-assign-modal-body {
+  @apply flex flex-col flex-1 min-h-0 p-4 overflow-hidden;
+}
+
+.mp-assign-modal-filters {
+  @apply flex flex-wrap gap-2 mb-3 flex-shrink-0;
+}
+
+.mp-assign-modal-actions {
+  @apply flex flex-wrap gap-2 mb-3 flex-shrink-0;
+}
+
+.mp-assign-modal-actions-row {
+  @apply flex-wrap items-center gap-3;
+}
+
+.mp-assign-modal-change-row {
+  @apply flex items-center gap-2;
+}
+
+.mp-assign-modal-input {
+  @apply rounded-md border border-neutral-300 px-3 py-2 text-neutral-900 text-sm;
+}
+
+.mp-assign-modal-select {
+  @apply min-w-[140px];
+}
+
+.mp-assign-modal-btn {
+  @apply rounded-md border border-neutral-300 px-3 py-2 text-sm font-medium hover:bg-neutral-50 disabled:opacity-50;
+}
+
+.mp-assign-modal-btn-primary {
+  @apply bg-blue-600 text-white border-blue-600 hover:bg-blue-700;
+}
+
+.mp-assign-modal-btn-danger {
+  @apply border-red-300 text-red-700 hover:bg-red-50;
+}
+
+.mp-assign-modal-list-wrap {
+  @apply flex-1 overflow-y-auto min-h-0 border border-neutral-200 rounded-md;
+}
+
+.mp-assign-modal-list {
+  @apply divide-y divide-neutral-100;
+}
+
+.mp-assign-modal-list-item {
+  @apply list-none;
+}
+
+.mp-assign-modal-check-label {
+  @apply flex items-center gap-2 px-3 py-2 hover:bg-neutral-50 cursor-pointer;
+}
+
+.mp-assign-modal-checkbox {
+  @apply rounded border-neutral-300;
+}
+
+.mp-assign-modal-list-name {
+  @apply font-medium text-neutral-900 flex-1;
+}
+
+.mp-assign-modal-list-clubs {
+  @apply text-xs text-neutral-500;
+}
+
+.mp-assign-modal-loading,
+.mp-assign-modal-empty {
+  @apply py-8 text-center text-neutral-500 text-sm;
+}
+
+.mp-assign-modal-pagination {
+  @apply flex items-center justify-center gap-3 py-3 border-t border-neutral-200 flex-shrink-0;
+}
+
+.mp-assign-modal-page-num {
+  @apply text-sm text-neutral-600;
+}
