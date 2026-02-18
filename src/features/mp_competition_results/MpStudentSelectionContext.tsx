@@ -33,11 +33,11 @@ export function MpStudentSelectionProvider({ children }: { children: ReactNode }
   }, []);
 
   /**
-   * 1人の生徒を「grade_class_num last_name first_name」形式にフォーマット
-   * 例: 「3M 三田村 和馬」
+   * 1人の生徒を「苗字 名前 (クラス)」形式にフォーマット
+   * 例: 「三田村 和真 (3M)」
    */
   const formatStudentForForm = useCallback((student: MpStudent): string => {
-    return `${student.grade_class_num} ${student.last_name} ${student.first_name}`;
+    return `${student.last_name} ${student.first_name} (${student.grade_class_num})`;
   }, []);
 
   /**

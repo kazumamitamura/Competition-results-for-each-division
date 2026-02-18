@@ -1,15 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { useMpStudentSelection } from "./MpStudentSelectionContext";
 import { mpSaveCompetitionResult, mpSaveIndividualCompetitionResults } from "./actions";
 import { useMpProfile } from "@/features/mp_auth";
-import type { MpTeamPayload, MpIndividualPayload } from "./types";
-import type { MpStudent } from "./types";
+import type { MpTeamPayload } from "./types";
 
 const INITIAL_MEMBER_ROWS = 5;
 const MAX_MEMBER_ROWS = 20;
+
+const createEmptyIndividualEntry = (): IndividualEntry => ({
+  rowId: `row-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+  studentId: "",
+  studentName: "",
+  result: "",
+});
 
 type MpDivision = "team" | "individual";
 
@@ -25,8 +31,9 @@ interface MpResultFormData {
 }
 
 interface IndividualEntry {
-  studentId: string;
-  studentName: string; // 「grade_class_num last_name first_name」形式
+  rowId: string;
+  studentId: string; // サイドバーから選択時のみセット（保存時に使用）
+  studentName: string; // 「苗字 名前 (クラス)」形式
   result: string;
 }
 
@@ -38,9 +45,14 @@ export function MpResultForm() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [memberRows, setMemberRows] = useState<string[]>(
-    Array(INITIAL_MEMBER_ROWS).fill("")
+    () => Array(INITIAL_MEMBER_ROWS).fill("")
   );
-  const [individualEntries, setIndividualEntries] = useState<IndividualEntry[]>([]);
+  const [individualEntries, setIndividualEntries] = useState<IndividualEntry[]>(
+    () => Array.from({ length: INITIAL_MEMBER_ROWS }, createEmptyIndividualEntry)
+  );
+
+  const memberRowsRef = useRef<string[]>(memberRows);
+  memberRowsRef.current = memberRows;
 
   const {
     register,
@@ -62,55 +74,58 @@ export function MpResultForm() {
     },
   });
 
-  // 団体戦: 選択した生徒をメンバー欄に自動挿入（上から順に空欄を埋める）
+  // 団体戦: 選択した生徒を「最初の空欄」に順にセット。空きがなければ末尾に push
   useEffect(() => {
-    if (division === "team" && selectedStudents.length > 0) {
-      const currentMembers = watch("members") || [];
-      const newMembers = [...currentMembers];
-      let insertIndex = 0;
+    if (division !== "team" || selectedStudents.length === 0) return;
+
+    const prev = memberRowsRef.current;
+    const next = [...prev];
+
+    for (const student of selectedStudents) {
+      const formatted = formatStudentForForm(student);
+      const emptyIndex = next.findIndex((m) => typeof m === "string" && m.trim() === "");
+      if (emptyIndex >= 0) {
+        next[emptyIndex] = formatted;
+      } else if (next.length < MAX_MEMBER_ROWS) {
+        next.push(formatted);
+      }
+    }
+
+    setMemberRows(next);
+    setValue("members", next);
+    memberRowsRef.current = next;
+    clearSelection();
+  }, [division, selectedStudents, formatStudentForForm, setValue, clearSelection]);
+
+  // 個人戦: 選択した生徒を「studentName が空の最初の行」にセット。空きがなければ末尾に追加
+  useEffect(() => {
+    if (division !== "individual" || selectedStudents.length === 0) return;
+
+    setIndividualEntries((prev) => {
+      const next = [...prev];
       for (const student of selectedStudents) {
         const formatted = formatStudentForForm(student);
-        while (insertIndex < newMembers.length && newMembers[insertIndex]?.trim()) {
-          insertIndex++;
-        }
-        if (insertIndex < MAX_MEMBER_ROWS) {
-          if (insertIndex >= newMembers.length) {
-            newMembers.push(formatted);
-          } else {
-            newMembers[insertIndex] = formatted;
-          }
-          insertIndex++;
+        const emptyIndex = next.findIndex((e) => e.studentName.trim() === "");
+        if (emptyIndex >= 0) {
+          next[emptyIndex] = { ...next[emptyIndex], studentId: student.id, studentName: formatted };
+        } else {
+          next.push({
+            ...createEmptyIndividualEntry(),
+            studentId: student.id,
+            studentName: formatted,
+          });
         }
       }
-      setValue("members", newMembers);
-      setMemberRows(newMembers);
-    }
-  }, [division, selectedStudents, formatStudentForForm, setValue, watch]);
-
-  // 個人戦: 選択した生徒を個人成績リストに追加
-  useEffect(() => {
-    if (division === "individual" && selectedStudents.length > 0) {
-      setIndividualEntries((prev) => {
-        const existingIds = new Set(prev.map((e) => e.studentId));
-        const newEntries: IndividualEntry[] = [];
-        for (const student of selectedStudents) {
-          if (!existingIds.has(student.id)) {
-            newEntries.push({
-              studentId: student.id,
-              studentName: formatStudentForForm(student),
-              result: "",
-            });
-          }
-        }
-        return [...prev, ...newEntries];
-      });
-      clearSelection();
-    }
+      return next;
+    });
+    clearSelection();
   }, [division, selectedStudents, formatStudentForForm, clearSelection]);
 
   // 団体/個人切り替え時にフォームをリセット
   useEffect(() => {
     const emptyMembers = Array(INITIAL_MEMBER_ROWS).fill("");
+    setMemberRows(emptyMembers);
+    setIndividualEntries(Array.from({ length: INITIAL_MEMBER_ROWS }, createEmptyIndividualEntry));
     reset({
       competitionName: watch("competitionName"),
       division,
@@ -121,8 +136,6 @@ export function MpResultForm() {
       opponent: "",
       round: "",
     });
-    setMemberRows(emptyMembers);
-    setIndividualEntries([]);
     clearSelection();
   }, [division, reset, watch, clearSelection]);
 
@@ -141,10 +154,7 @@ export function MpResultForm() {
   };
 
   const addIndividualRow = () => {
-    setIndividualEntries((prev) => [
-      ...prev,
-      { studentId: `new-${Date.now()}`, studentName: "", result: "" },
-    ]);
+    setIndividualEntries((prev) => [...prev, createEmptyIndividualEntry()]);
   };
 
   const updateIndividualRow = (index: number, field: "studentName" | "result", value: string) => {
@@ -245,7 +255,7 @@ export function MpResultForm() {
         opponent: "",
         round: "",
       });
-      setIndividualEntries([]);
+      setIndividualEntries(Array.from({ length: INITIAL_MEMBER_ROWS }, createEmptyIndividualEntry));
       clearSelection();
     }
 
@@ -432,7 +442,7 @@ export function MpResultForm() {
               <label className="mp-result-form-label">出場選手・成績</label>
               <div className="mp-result-form-individual-list">
                 {individualEntries.map((entry, index) => (
-                  <div key={entry.studentId || index} className="mp-result-form-individual-row">
+                  <div key={entry.rowId} className="mp-result-form-individual-row">
                     <span className="mp-result-form-individual-number">{index + 1}.</span>
                     <input
                       type="text"
@@ -440,7 +450,7 @@ export function MpResultForm() {
                       onChange={(e) => updateIndividualRow(index, "studentName", e.target.value)}
                       className="mp-result-form-input mp-result-form-individual-name"
                       placeholder="生徒名（サイドバーから選択）"
-                      readOnly={!!entry.studentId && !entry.studentId.startsWith("new-")}
+                      readOnly={!!entry.studentName.trim()}
                     />
                     <input
                       type="text"

@@ -290,7 +290,7 @@ export function StudentAssignmentModal({
                             className="mp-assign-modal-checkbox"
                           />
                           <span className="mp-assign-modal-list-name">
-                            {s.grade_class_num} {s.last_name} {s.first_name}
+                            {s.last_name} {s.first_name} ({s.grade_class_num})
                           </span>
                           <span className="mp-assign-modal-list-clubs">
                             {[s.club_name, s.club_name_2].filter(Boolean).join(" / ") || "—"}
@@ -382,7 +382,7 @@ export function StudentAssignmentModal({
                               className="mp-assign-modal-checkbox"
                             />
                             <span className="mp-assign-modal-list-name">
-                              {s.grade_class_num} {s.last_name} {s.first_name}
+                              {s.last_name} {s.first_name} ({s.grade_class_num})
                             </span>
                             <span className="mp-assign-modal-list-clubs">
                               {[s.club_name, s.club_name_2].filter(Boolean).join(" / ")}
