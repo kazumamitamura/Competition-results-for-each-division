@@ -28,6 +28,7 @@ export interface MpStudentFormData {
   club_name_2: string; // 空文字で「なし」
 }
 
+/** データベースの大会成績テーブル構造 */
 export interface MpCompetitionResult {
   id: string;
   profile_id: string | null;
@@ -67,4 +68,30 @@ export interface MpIndividualPayload {
     rank?: string;
     [key: string]: unknown;
   }>;
+}
+
+// ▼▼▼ ここが今回の修正ポイント（追記部分） ▼▼▼
+
+/** 大会成績 入力フォーム用の型定義 */
+// エラーの原因は、この型定義に date / endDate が無かったことでした
+export interface MpResultFormData {
+  competitionName: string;
+  date: string;       // ← 必須
+  endDate?: string;   // ← 任意
+  division: "team" | "individual";
+  
+  // 団体戦用フィールド
+  members: string[];
+  score: string;
+  rank: string;
+  opponent: string;
+  round: string;
+
+  // 個人戦用フィールド
+  individualEntries: { 
+    student_name: string; 
+    result: string 
+  }[];
+
+  specialPrizes: string;
 }
