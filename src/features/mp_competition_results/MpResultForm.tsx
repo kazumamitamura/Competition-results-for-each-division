@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { useMpStudentSelection } from "./MpStudentSelectionContext";
 import { mpSaveCompetitionResult, mpSaveIndividualCompetitionResults } from "./actions";
@@ -38,6 +39,7 @@ interface IndividualEntry {
 }
 
 export function MpResultForm() {
+  const router = useRouter();
   const { profile, assignedClub, isLoading: profileLoading } = useMpProfile();
   const { selectedStudents, formatStudentForForm, clearSelection } =
     useMpStudentSelection();
@@ -64,6 +66,8 @@ export function MpResultForm() {
   } = useForm<MpResultFormData>({
     defaultValues: {
       competitionName: "",
+      date: "",
+      endDate: "",
       division: "team",
       members: Array(INITIAL_MEMBER_ROWS).fill(""),
       specialPrizes: "",
@@ -128,6 +132,8 @@ export function MpResultForm() {
     setIndividualEntries(Array.from({ length: INITIAL_MEMBER_ROWS }, createEmptyIndividualEntry));
     reset({
       competitionName: watch("competitionName"),
+      date: watch("date"),
+      endDate: watch("endDate"),
       division,
       members: emptyMembers,
       specialPrizes: "",
@@ -200,7 +206,9 @@ export function MpResultForm() {
         division,
         payload,
         assignedClub,
-        data.specialPrizes?.trim() || undefined
+        data.specialPrizes?.trim() || undefined,
+        data.date?.trim() || undefined,
+        data.endDate?.trim() || undefined
       );
 
       if (result.error) {
@@ -212,6 +220,8 @@ export function MpResultForm() {
       const emptyMembers = Array(INITIAL_MEMBER_ROWS).fill("");
       reset({
         competitionName: "",
+        date: "",
+        endDate: "",
         division,
         members: emptyMembers,
         specialPrizes: "",
@@ -222,6 +232,9 @@ export function MpResultForm() {
       });
       setMemberRows(emptyMembers);
       clearSelection();
+      setTimeout(() => setSubmitSuccess(false), 3000);
+      setTimeout(() => router.push("/"), 1500);
+      return;
     } else {
       // 個人戦: 1人1レコードとして複数INSERT
       const validEntries = individualEntries.filter(
@@ -236,7 +249,9 @@ export function MpResultForm() {
         data.competitionName,
         validEntries,
         assignedClub,
-        data.specialPrizes?.trim() || undefined
+        data.specialPrizes?.trim() || undefined,
+        data.date?.trim() || undefined,
+        data.endDate?.trim() || undefined
       );
 
       if (result.error) {
@@ -247,6 +262,8 @@ export function MpResultForm() {
       setSubmitSuccess(true);
       reset({
         competitionName: "",
+        date: "",
+        endDate: "",
         division,
         members: Array(INITIAL_MEMBER_ROWS).fill(""),
         specialPrizes: "",
@@ -257,9 +274,9 @@ export function MpResultForm() {
       });
       setIndividualEntries(Array.from({ length: INITIAL_MEMBER_ROWS }, createEmptyIndividualEntry));
       clearSelection();
+      setTimeout(() => setSubmitSuccess(false), 3000);
+      setTimeout(() => router.push("/"), 1500);
     }
-
-    setTimeout(() => setSubmitSuccess(false), 3000);
   }
 
   if (profileLoading) {
@@ -336,6 +353,31 @@ export function MpResultForm() {
               {errors.competitionName.message}
             </span>
           )}
+        </div>
+
+        <div className="mp-result-form-field-row">
+          <div className="mp-result-form-field">
+            <label htmlFor="mp-date" className="mp-result-form-label">
+              大会日
+            </label>
+            <input
+              id="mp-date"
+              type="date"
+              className="mp-result-form-input"
+              {...register("date")}
+            />
+          </div>
+          <div className="mp-result-form-field">
+            <label htmlFor="mp-end-date" className="mp-result-form-label">
+              終了日（任意）
+            </label>
+            <input
+              id="mp-end-date"
+              type="date"
+              className="mp-result-form-input"
+              {...register("endDate")}
+            />
+          </div>
         </div>
 
         {division === "team" && (

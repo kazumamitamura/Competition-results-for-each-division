@@ -40,7 +40,9 @@ export async function mpSaveCompetitionResult(
   division: "team" | "individual",
   payload: MpCompetitionResult["payload"],
   clubName: string,
-  specialPrizes?: string
+  specialPrizes?: string,
+  date?: string,
+  endDate?: string
 ): Promise<{ error?: string; data?: MpCompetitionResult }> {
   const supabase = await createClient();
   const {
@@ -55,6 +57,8 @@ export async function mpSaveCompetitionResult(
     division: "team" | "individual";
     payload: MpCompetitionResult["payload"];
     special_prizes?: string;
+    date?: string | null;
+    end_date?: string | null;
   } = {
     profile_id: user.id,
     club_name: clubName,
@@ -65,6 +69,14 @@ export async function mpSaveCompetitionResult(
 
   if (specialPrizes?.trim()) {
     insertData.special_prizes = specialPrizes.trim();
+  }
+  if (date?.trim()) {
+    insertData.date = date.trim();
+  }
+  if (endDate?.trim()) {
+    insertData.end_date = endDate.trim();
+  } else if (date?.trim()) {
+    insertData.end_date = date.trim();
   }
 
   const { data, error } = await supabase
@@ -84,7 +96,9 @@ export async function mpSaveIndividualCompetitionResults(
   competitionName: string,
   entries: Array<{ studentId: string; studentName: string; result: string }>,
   clubName: string,
-  specialPrizes?: string
+  specialPrizes?: string,
+  date?: string,
+  endDate?: string
 ): Promise<{ error?: string; saved?: number }> {
   const supabase = await createClient();
   const {
@@ -95,6 +109,9 @@ export async function mpSaveIndividualCompetitionResults(
   if (entries.length === 0) {
     return { error: "出場選手を1名以上入力してください" };
   }
+
+  const resolvedEndDate = endDate?.trim() || date?.trim() || null;
+  const resolvedDate = date?.trim() || null;
 
   const insertData = entries
     .filter((e) => e.studentName.trim() && e.result.trim())
@@ -116,6 +133,8 @@ export async function mpSaveIndividualCompetitionResults(
         division: "individual";
         payload: MpCompetitionResult["payload"];
         special_prizes?: string;
+        date?: string | null;
+        end_date?: string | null;
       } = {
         profile_id: user.id,
         club_name: clubName,
@@ -127,6 +146,8 @@ export async function mpSaveIndividualCompetitionResults(
       if (specialPrizes?.trim()) {
         row.special_prizes = specialPrizes.trim();
       }
+      if (resolvedDate) row.date = resolvedDate;
+      if (resolvedEndDate) row.end_date = resolvedEndDate;
 
       return row;
     });
@@ -139,4 +160,45 @@ export async function mpSaveIndividualCompetitionResults(
 
   if (error) return { error: error.message };
   return { saved: insertData.length };
+}
+
+/**
+ * 大会成績を1件更新（ダッシュボード編集用）
+ */
+export async function mpUpdateCompetitionResult(
+  id: string,
+  updates: {
+    competition_name?: string | null;
+    date?: string | null;
+    end_date?: string | null;
+    payload?: MpCompetitionResult["payload"];
+    special_prizes?: string | null;
+  }
+): Promise<{ error?: string; data?: MpCompetitionResult }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "ログインが必要です" };
+
+  const updateData: Record<string, unknown> = {};
+  if (updates.competition_name !== undefined) updateData.competition_name = updates.competition_name;
+  if (updates.date !== undefined) updateData.date = updates.date;
+  if (updates.end_date !== undefined) updateData.end_date = updates.end_date;
+  if (updates.payload !== undefined) updateData.payload = updates.payload;
+  if (updates.special_prizes !== undefined) updateData.special_prizes = updates.special_prizes;
+
+  if (Object.keys(updateData).length === 0) {
+    return { error: "更新する項目がありません" };
+  }
+
+  const { data, error } = await supabase
+    .from("mp_competition_results")
+    .update(updateData)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) return { error: error.message };
+  return { data: data as MpCompetitionResult };
 }

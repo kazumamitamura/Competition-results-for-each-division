@@ -148,6 +148,10 @@
   @apply space-y-1;
 }
 
+.mp-result-form-field-row {
+  @apply grid grid-cols-1 sm:grid-cols-2 gap-4;
+}
+
 .mp-result-form-section {
   @apply space-y-2;
 }
@@ -517,4 +521,58 @@
 
 .mp-dashboard-table tbody tr:hover {
   @apply bg-neutral-50;
+}
+
+.mp-dashboard-edit-btn {
+  @apply px-2 py-1 text-neutral-600 hover:text-blue-600 hover:bg-blue-50 rounded border border-transparent hover:border-blue-200;
+  @apply focus:outline-none focus:ring-1 focus:ring-blue-400;
+}
+
+/* ダッシュボード編集モーダル */
+.mp-dashboard-modal-overlay {
+  @apply fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4;
+}
+
+.mp-dashboard-modal {
+  @apply bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto;
+}
+
+.mp-dashboard-modal-title {
+  @apply text-lg font-semibold px-4 pt-4 pb-2 border-b border-neutral-200;
+}
+
+.mp-dashboard-modal-form {
+  @apply p-4 space-y-4;
+}
+
+.mp-dashboard-modal-error {
+  @apply px-3 py-2 bg-red-50 border border-red-200 text-red-800 rounded text-sm;
+}
+
+.mp-dashboard-modal-field {
+  @apply flex flex-col gap-1;
+}
+
+.mp-dashboard-modal-row {
+  @apply grid grid-cols-2 gap-3;
+}
+
+.mp-dashboard-modal-label {
+  @apply text-sm font-medium text-neutral-700;
+}
+
+.mp-dashboard-modal-input {
+  @apply w-full px-3 py-2 border border-neutral-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+}
+
+.mp-dashboard-modal-actions {
+  @apply flex gap-3 pt-2 justify-end;
+}
+
+.mp-dashboard-modal-cancel {
+  @apply px-4 py-2 border border-neutral-300 rounded text-neutral-700 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-400;
+}
+
+.mp-dashboard-modal-submit {
+  @apply px-4 py-2 bg-blue-600 text-white rounded font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50;
 }

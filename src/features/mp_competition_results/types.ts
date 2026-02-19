@@ -36,6 +36,10 @@ export interface MpCompetitionResult {
   division: "team" | "individual";
   payload: MpCompetitionPayload;
   special_prizes?: string;
+  /** 大会日（開始日）YYYY-MM-DD */
+  date?: string | null;
+  /** 大会終了日（任意）YYYY-MM-DD */
+  end_date?: string | null;
   created_at: string;
   updated_at: string;
 }
