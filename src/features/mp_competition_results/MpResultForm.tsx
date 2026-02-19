@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { useMpStudentSelection } from "./MpStudentSelectionContext";
 import { mpSaveCompetitionResult, mpSaveIndividualCompetitionResults } from "./actions";
 import { useMpProfile } from "@/features/mp_auth";
-import type { MpTeamPayload } from "./types";
+import type { MpTeamPayload, MpResultFormData } from "./types";
 
 const INITIAL_MEMBER_ROWS = 5;
 const MAX_MEMBER_ROWS = 20;
@@ -19,17 +19,6 @@ const createEmptyIndividualEntry = (): IndividualEntry => ({
 });
 
 type MpDivision = "team" | "individual";
-
-interface MpResultFormData {
-  competitionName: string;
-  division: MpDivision;
-  members: string[]; // 団体戦用: メンバー名の配列
-  specialPrizes?: string; // 特別賞 / 備考
-  score?: string;
-  rank?: string;
-  opponent?: string;
-  round?: string;
-}
 
 interface IndividualEntry {
   rowId: string;
