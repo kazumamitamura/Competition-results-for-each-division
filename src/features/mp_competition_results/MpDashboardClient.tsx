@@ -5,8 +5,26 @@ import { mpGetCompetitionResults, type MpDashboardFilters } from "./actions/mpDa
 import { mpUpdateCompetitionResult } from "./actions";
 import { getAcademicYear, getAvailableAcademicYears, formatAcademicYear } from "./utils/academicYear";
 import { exportToExcel } from "./utils/excelExport";
+import { exportToCsv } from "./utils/csvExport";
 import { MpSignboardRequestButton } from "./components/MpSignboardRequestButton";
 import type { MpCompetitionResult, MpCompetitionPayload } from "./types";
+
+/** 生徒名・クラスキーワードでレコードをフィルタ（個人戦: student_name、団体戦: members のいずれか） */
+function filterByStudentOrClassKeyword(
+  results: MpCompetitionResult[],
+  keyword: string
+): MpCompetitionResult[] {
+  const k = keyword.trim().toLowerCase();
+  if (!k) return results;
+  return results.filter((r) => {
+    if (r.payload.type === "individual") {
+      const name = r.payload.entries?.[0]?.student_name ?? "";
+      return name.toLowerCase().includes(k);
+    }
+    const members = r.payload.members ?? [];
+    return members.some((m) => m.toLowerCase().includes(k));
+  });
+}
 
 interface MpDashboardClientProps {
   clubOptions: string[];
@@ -31,10 +49,13 @@ export function MpDashboardClient({ clubOptions }: MpDashboardClientProps) {
   });
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [studentKeyword, setStudentKeyword] = useState("");
   const [results, setResults] = useState<MpCompetitionResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingResult, setEditingResult] = useState<MpCompetitionResult | null>(null);
+
+  const filteredResults = filterByStudentOrClassKeyword(results, studentKeyword);
 
   const loadResults = useCallback(async () => {
     setIsLoading(true);
@@ -59,8 +80,12 @@ export function MpDashboardClient({ clubOptions }: MpDashboardClientProps) {
     loadResults();
   }, [loadResults]);
 
-  const handleExport = () => {
-    exportToExcel(results);
+  const handleExportExcel = () => {
+    exportToExcel(filteredResults);
+  };
+
+  const handleExportCsv = () => {
+    exportToCsv(filteredResults);
   };
 
   const formatDate = (dateStr: string) => {
@@ -147,21 +172,42 @@ export function MpDashboardClient({ clubOptions }: MpDashboardClientProps) {
               className="mp-dashboard-filter-input"
             />
           </div>
+
+          <div className="mp-dashboard-filter-field">
+            <label className="mp-dashboard-filter-label">生徒名・クラス検索</label>
+            <input
+              type="text"
+              value={studentKeyword}
+              onChange={(e) => setStudentKeyword(e.target.value)}
+              className="mp-dashboard-filter-input"
+              placeholder="例: 3M、三田村"
+            />
+          </div>
         </div>
       </aside>
 
       {/* 結果一覧 */}
       <main className="mp-dashboard-main">
         <div className="mp-dashboard-header-actions">
-          <h2 className="mp-dashboard-results-title">結果一覧 ({results.length}件)</h2>
-          <button
-            type="button"
-            onClick={handleExport}
-            disabled={results.length === 0}
-            className="mp-dashboard-export-btn"
-          >
-            Excelダウンロード
-          </button>
+          <h2 className="mp-dashboard-results-title">結果一覧 ({filteredResults.length}件)</h2>
+          <div className="mp-dashboard-export-buttons">
+            <button
+              type="button"
+              onClick={handleExportCsv}
+              disabled={filteredResults.length === 0}
+              className="mp-dashboard-export-btn"
+            >
+              📥 表示中のデータをエクスポート
+            </button>
+            <button
+              type="button"
+              onClick={handleExportExcel}
+              disabled={filteredResults.length === 0}
+              className="mp-dashboard-export-btn mp-dashboard-export-btn-secondary"
+            >
+              Excelダウンロード
+            </button>
+          </div>
         </div>
 
         {isLoading && <div className="mp-dashboard-loading">読み込み中...</div>}
@@ -171,7 +217,11 @@ export function MpDashboardClient({ clubOptions }: MpDashboardClientProps) {
           <div className="mp-dashboard-empty">該当するデータがありません。</div>
         )}
 
-        {!isLoading && !error && results.length > 0 && (
+        {!isLoading && !error && results.length > 0 && filteredResults.length === 0 && (
+          <div className="mp-dashboard-empty">「生徒名・クラス検索」に一致するデータがありません。</div>
+        )}
+
+        {!isLoading && !error && filteredResults.length > 0 && (
           <div className="mp-dashboard-table-wrap">
             <table className="mp-dashboard-table">
               <thead>
@@ -188,7 +238,7 @@ export function MpDashboardClient({ clubOptions }: MpDashboardClientProps) {
                 </tr>
               </thead>
               <tbody>
-                {results.map((result) => (
+                {filteredResults.map((result) => (
                   <tr key={result.id}>
                     <td>{displayDate(result)}</td>
                     <td>{result.club_name}</td>
