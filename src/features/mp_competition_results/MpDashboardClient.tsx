@@ -5,6 +5,7 @@ import { mpGetCompetitionResults, type MpDashboardFilters } from "./actions/mpDa
 import { mpUpdateCompetitionResult } from "./actions";
 import { getAcademicYear, getAvailableAcademicYears, formatAcademicYear } from "./utils/academicYear";
 import { exportToExcel } from "./utils/excelExport";
+import { MpSignboardRequestButton } from "./components/MpSignboardRequestButton";
 import type { MpCompetitionResult, MpCompetitionPayload } from "./types";
 
 interface MpDashboardClientProps {
@@ -183,6 +184,7 @@ export function MpDashboardClient({ clubOptions }: MpDashboardClientProps) {
                   <th>メンバー</th>
                   <th>特別賞</th>
                   <th aria-label="操作"> </th>
+                  <th>看板依頼</th>
                 </tr>
               </thead>
               <tbody>
@@ -205,6 +207,15 @@ export function MpDashboardClient({ clubOptions }: MpDashboardClientProps) {
                       >
                         ✎
                       </button>
+                    </td>
+                    <td>
+                      <MpSignboardRequestButton
+                        competitionId={result.id}
+                        clubName={result.club_name}
+                        competitionName={result.competition_name ?? ""}
+                        isRequested={result.is_signboard_requested ?? false}
+                        onSuccess={loadResults}
+                      />
                     </td>
                   </tr>
                 ))}
