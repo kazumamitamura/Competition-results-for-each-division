@@ -3,6 +3,15 @@
  * mp_ プレフィックスで隔離
  */
 
+/** 通知（看板依頼等） */
+export interface MpNotification {
+  id: string;
+  user_id: string;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+}
+
 export interface MpStudent {
   id: string;
   grade_class_num: string; // 「2-1-15」形式
