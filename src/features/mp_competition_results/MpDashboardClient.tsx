@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { mpGetCompetitionResults, type MpDashboardFilters } from "./actions/mpDashboardActions";
 import { mpUpdateCompetitionResult } from "./actions";
 import { getAcademicYear, getAvailableAcademicYears, formatAcademicYear } from "./utils/academicYear";
@@ -8,6 +8,21 @@ import { exportToExcel } from "./utils/excelExport";
 import { exportToCsv } from "./utils/csvExport";
 import { MpSignboardRequestButton } from "./components/MpSignboardRequestButton";
 import type { MpCompetitionResult, MpCompetitionPayload } from "./types";
+
+/** 生徒名文字列からクラス部分を抽出（例: "三田村 和真 (3M)" → "3M"） */
+function extractClassFromStudentName(studentName: string): string | null {
+  const match = studentName.match(/\(([^)]+)\)/);
+  return match ? match[1].trim() : null;
+}
+
+/** 1レコードから生徒名/メンバー名の配列を取得 */
+function getStudentOrMemberNames(r: MpCompetitionResult): string[] {
+  if (r.payload.type === "individual") {
+    const name = r.payload.entries?.[0]?.student_name;
+    return name ? [name] : [];
+  }
+  return r.payload.members ?? [];
+}
 
 /** 生徒名・クラスキーワードでレコードをフィルタ（個人戦: student_name、団体戦: members のいずれか） */
 function filterByStudentOrClassKeyword(
@@ -17,13 +32,57 @@ function filterByStudentOrClassKeyword(
   const k = keyword.trim().toLowerCase();
   if (!k) return results;
   return results.filter((r) => {
-    if (r.payload.type === "individual") {
-      const name = r.payload.entries?.[0]?.student_name ?? "";
-      return name.toLowerCase().includes(k);
-    }
-    const members = r.payload.members ?? [];
-    return members.some((m) => m.toLowerCase().includes(k));
+    const names = getStudentOrMemberNames(r);
+    return names.some((n) => n.toLowerCase().includes(k));
   });
+}
+
+/** 部活名・クラス・生徒名のドロップダウン用に results からユニーク値を生成 */
+function useUniqueFilterOptions(results: MpCompetitionResult[]) {
+  return useMemo(() => {
+    const clubs = new Set<string>();
+    const classes = new Set<string>();
+    const studentNames = new Set<string>();
+    for (const r of results) {
+      clubs.add(r.club_name);
+      for (const name of getStudentOrMemberNames(r)) {
+        studentNames.add(name);
+        const cls = extractClassFromStudentName(name);
+        if (cls) classes.add(cls);
+      }
+    }
+    return {
+      clubNames: Array.from(clubs).sort(),
+      classNames: Array.from(classes).sort(),
+      studentNames: Array.from(studentNames).sort(),
+    };
+  }, [results]);
+}
+
+/** 部活名・クラス・生徒名のドロップダウン選択でフィルタ（AND条件） */
+function applyDropdownFilters(
+  results: MpCompetitionResult[],
+  selectedClub: string,
+  selectedClass: string,
+  selectedStudent: string
+): MpCompetitionResult[] {
+  let out = results;
+  if (selectedClub) {
+    out = out.filter((r) => r.club_name === selectedClub);
+  }
+  if (selectedClass) {
+    out = out.filter((r) => {
+      const names = getStudentOrMemberNames(r);
+      return names.some((n) => extractClassFromStudentName(n) === selectedClass);
+    });
+  }
+  if (selectedStudent) {
+    out = out.filter((r) => {
+      const names = getStudentOrMemberNames(r);
+      return names.some((n) => n === selectedStudent);
+    });
+  }
+  return out;
 }
 
 interface MpDashboardClientProps {
@@ -50,12 +109,22 @@ export function MpDashboardClient({ clubOptions }: MpDashboardClientProps) {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [studentKeyword, setStudentKeyword] = useState("");
+  const [filterClub, setFilterClub] = useState("");
+  const [filterClass, setFilterClass] = useState("");
+  const [filterStudent, setFilterStudent] = useState("");
   const [results, setResults] = useState<MpCompetitionResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingResult, setEditingResult] = useState<MpCompetitionResult | null>(null);
 
-  const filteredResults = filterByStudentOrClassKeyword(results, studentKeyword);
+  const { clubNames, classNames, studentNames } = useUniqueFilterOptions(results);
+  const filteredByKeyword = filterByStudentOrClassKeyword(results, studentKeyword);
+  const filteredResults = applyDropdownFilters(
+    filteredByKeyword,
+    filterClub,
+    filterClass,
+    filterStudent
+  );
 
   const loadResults = useCallback(async () => {
     setIsLoading(true);
@@ -182,6 +251,54 @@ export function MpDashboardClient({ clubOptions }: MpDashboardClientProps) {
               className="mp-dashboard-filter-input"
               placeholder="例: 3M、三田村"
             />
+          </div>
+
+          <div className="mp-dashboard-filter-field">
+            <label className="mp-dashboard-filter-label">部活名</label>
+            <select
+              value={filterClub}
+              onChange={(e) => setFilterClub(e.target.value)}
+              className="mp-dashboard-filter-input"
+            >
+              <option value="">すべて</option>
+              {clubNames.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="mp-dashboard-filter-field">
+            <label className="mp-dashboard-filter-label">クラス</label>
+            <select
+              value={filterClass}
+              onChange={(e) => setFilterClass(e.target.value)}
+              className="mp-dashboard-filter-input"
+            >
+              <option value="">すべて</option>
+              {classNames.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="mp-dashboard-filter-field">
+            <label className="mp-dashboard-filter-label">生徒名</label>
+            <select
+              value={filterStudent}
+              onChange={(e) => setFilterStudent(e.target.value)}
+              className="mp-dashboard-filter-input"
+            >
+              <option value="">すべて</option>
+              {studentNames.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </aside>

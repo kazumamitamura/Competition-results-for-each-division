@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { useMpStudentSelection } from "./MpStudentSelectionContext";
 import { mpSaveCompetitionResult, mpSaveIndividualCompetitionResults } from "./actions";
+import { createSignboardRequestNotification } from "./actions/mpNotificationActions";
 import { useMpProfile } from "@/features/mp_auth";
 import type { MpTeamPayload, MpResultFormData } from "./types";
 
@@ -64,6 +65,7 @@ export function MpResultForm() {
       rank: "",
       opponent: "",
       round: "",
+      requestSignboard: false,
     },
   });
 
@@ -130,6 +132,7 @@ export function MpResultForm() {
       rank: "",
       opponent: "",
       round: "",
+      requestSignboard: false,
     });
     clearSelection();
   }, [division, reset, watch, clearSelection]);
@@ -197,12 +200,21 @@ export function MpResultForm() {
         assignedClub,
         data.specialPrizes?.trim() || undefined,
         data.date?.trim() || undefined,
-        data.endDate?.trim() || undefined
+        data.endDate?.trim() || undefined,
+        data.requestSignboard === true
       );
 
       if (result.error) {
         setSubmitError(result.error);
         return;
+      }
+
+      if (result.data && data.requestSignboard === true) {
+        await createSignboardRequestNotification(
+          result.data.id,
+          assignedClub,
+          data.competitionName || "（大会名なし）"
+        );
       }
 
       setSubmitSuccess(true);
@@ -218,6 +230,7 @@ export function MpResultForm() {
         rank: "",
         opponent: "",
         round: "",
+        requestSignboard: false,
       });
       setMemberRows(emptyMembers);
       clearSelection();
@@ -240,12 +253,21 @@ export function MpResultForm() {
         assignedClub,
         data.specialPrizes?.trim() || undefined,
         data.date?.trim() || undefined,
-        data.endDate?.trim() || undefined
-      );
+        data.endDate?.trim() || undefined,
+        data.requestSignboard === true
+      ) as { error?: string; saved?: number; firstId?: string };
 
       if (result.error) {
         setSubmitError(result.error);
         return;
+      }
+
+      if (result.firstId && data.requestSignboard === true) {
+        await createSignboardRequestNotification(
+          result.firstId,
+          assignedClub,
+          data.competitionName || "（大会名なし）"
+        );
       }
 
       setSubmitSuccess(true);
@@ -260,6 +282,7 @@ export function MpResultForm() {
         rank: "",
         opponent: "",
         round: "",
+        requestSignboard: false,
       });
       setIndividualEntries(Array.from({ length: INITIAL_MEMBER_ROWS }, createEmptyIndividualEntry));
       clearSelection();
@@ -525,6 +548,17 @@ export function MpResultForm() {
             </div>
           </>
         )}
+
+        <div className="mp-result-form-field">
+          <label className="mp-result-form-checkbox-label">
+            <input
+              type="checkbox"
+              className="mp-result-form-checkbox"
+              {...register("requestSignboard")}
+            />
+            保存と同時に、担当者へ看板製作を依頼する
+          </label>
+        </div>
 
         <button
           type="submit"

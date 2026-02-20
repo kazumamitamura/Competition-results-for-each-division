@@ -105,4 +105,7 @@ export interface MpResultFormData {
   }[];
 
   specialPrizes: string;
+
+  /** 保存と同時に看板製作を依頼する */
+  requestSignboard?: boolean;
 }

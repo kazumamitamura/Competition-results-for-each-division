@@ -231,6 +231,14 @@
   @apply px-4 py-3 bg-green-50 border border-green-200 text-green-800 rounded-md text-sm;
 }
 
+.mp-result-form-checkbox-label {
+  @apply flex items-center gap-2 cursor-pointer text-neutral-700;
+}
+
+.mp-result-form-checkbox {
+  @apply rounded border-neutral-300 text-blue-600 focus:ring-blue-500;
+}
+
 .mp-result-form-submit {
   @apply w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-md;
   @apply hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;

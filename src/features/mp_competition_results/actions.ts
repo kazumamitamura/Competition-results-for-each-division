@@ -42,7 +42,8 @@ export async function mpSaveCompetitionResult(
   clubName: string,
   specialPrizes?: string,
   date?: string,
-  endDate?: string
+  endDate?: string,
+  isSignboardRequested?: boolean
 ): Promise<{ error?: string; data?: MpCompetitionResult }> {
   const supabase = await createClient();
   const {
@@ -59,6 +60,7 @@ export async function mpSaveCompetitionResult(
     special_prizes?: string;
     date?: string | null;
     end_date?: string | null;
+    is_signboard_requested?: boolean;
   } = {
     profile_id: user.id,
     club_name: clubName,
@@ -77,6 +79,9 @@ export async function mpSaveCompetitionResult(
     insertData.end_date = endDate.trim();
   } else if (date?.trim()) {
     insertData.end_date = date.trim();
+  }
+  if (isSignboardRequested === true) {
+    insertData.is_signboard_requested = true;
   }
 
   const { data, error } = await supabase
@@ -98,8 +103,9 @@ export async function mpSaveIndividualCompetitionResults(
   clubName: string,
   specialPrizes?: string,
   date?: string,
-  endDate?: string
-): Promise<{ error?: string; saved?: number }> {
+  endDate?: string,
+  isSignboardRequested?: boolean
+): Promise<{ error?: string; saved?: number; firstId?: string }> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -135,6 +141,7 @@ export async function mpSaveIndividualCompetitionResults(
         special_prizes?: string;
         date?: string | null;
         end_date?: string | null;
+        is_signboard_requested?: boolean;
       } = {
         profile_id: user.id,
         club_name: clubName,
@@ -148,6 +155,9 @@ export async function mpSaveIndividualCompetitionResults(
       }
       if (resolvedDate) row.date = resolvedDate;
       if (resolvedEndDate) row.end_date = resolvedEndDate;
+      if (isSignboardRequested === true) {
+        row.is_signboard_requested = true;
+      }
 
       return row;
     });
@@ -156,10 +166,14 @@ export async function mpSaveIndividualCompetitionResults(
     return { error: "有効な出場選手と成績を入力してください" };
   }
 
-  const { error } = await supabase.from("mp_competition_results").insert(insertData);
+  const { data: inserted, error } = await supabase
+    .from("mp_competition_results")
+    .insert(insertData)
+    .select("id");
 
   if (error) return { error: error.message };
-  return { saved: insertData.length };
+  const firstId = Array.isArray(inserted) && inserted.length > 0 ? inserted[0].id : undefined;
+  return { saved: insertData.length, firstId };
 }
 
 /**
