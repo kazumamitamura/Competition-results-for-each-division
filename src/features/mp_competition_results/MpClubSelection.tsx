@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MpSignOutButton } from "@/features/mp_auth";
@@ -8,20 +8,30 @@ import { updateUserAssignedClub } from "./actions/mpUserActions";
 
 interface MpClubSelectionProps {
   initialAssignedClub: string | null;
+  initialIsSignboardManager?: boolean;
   clubNames: string[];
   userEmail: string;
 }
 
 export function MpClubSelection({
   initialAssignedClub,
+  initialIsSignboardManager = false,
   clubNames,
   userEmail,
 }: MpClubSelectionProps) {
   const router = useRouter();
   const [showSelector, setShowSelector] = useState(!initialAssignedClub?.trim());
   const [selectedClub, setSelectedClub] = useState(initialAssignedClub ?? "");
+  const [isSignboardManager, setIsSignboardManager] = useState(initialIsSignboardManager);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (showSelector) {
+      setSelectedClub(initialAssignedClub ?? "");
+      setIsSignboardManager(initialIsSignboardManager ?? false);
+    }
+  }, [showSelector, initialAssignedClub, initialIsSignboardManager]);
 
   async function handleRegister() {
     if (!selectedClub.trim()) {
@@ -30,7 +40,7 @@ export function MpClubSelection({
     }
     setError(null);
     setIsSubmitting(true);
-    const result = await updateUserAssignedClub(selectedClub.trim());
+    const result = await updateUserAssignedClub(selectedClub.trim(), isSignboardManager);
     setIsSubmitting(false);
     if (result.error) {
       setError(result.error);
@@ -63,6 +73,15 @@ export function MpClubSelection({
               </option>
             ))}
           </select>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isSignboardManager}
+              onChange={(e) => setIsSignboardManager(e.target.checked)}
+              className="rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-sm text-neutral-700">私は「看板製作担当」です</span>
+          </label>
           {clubNames.length === 0 && (
             <p className="text-sm text-amber-600">
               部活データがありません。CSVで mp_students にデータをインポートしてください。
@@ -103,6 +122,13 @@ export function MpClubSelection({
             変更
           </button>
         </p>
+        {initialIsSignboardManager && (
+          <p className="text-neutral-600">
+            <span className="inline-flex items-center gap-1 rounded bg-amber-100 px-2 py-0.5 text-sm font-medium text-amber-800">
+              🛠️ 看板製作担当
+            </span>
+          </p>
+        )}
       </div>
 
       <div className="flex flex-col items-center gap-3">

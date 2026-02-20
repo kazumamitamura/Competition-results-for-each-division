@@ -7,6 +7,8 @@ export interface MpUserProfile {
   role: MpUserRole;
   /** 顧問が担当する部活名（卓球、バスケ等） */
   assigned_club: string | null;
+  /** 看板製作担当かどうか */
+  is_signboard_manager?: boolean;
   created_at: string;
   updated_at: string;
 }

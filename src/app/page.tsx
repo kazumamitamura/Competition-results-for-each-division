@@ -20,6 +20,7 @@ export default async function HomePage() {
   return (
     <MpClubSelection
       initialAssignedClub={profile?.assigned_club ?? null}
+      initialIsSignboardManager={profile?.is_signboard_manager ?? false}
       clubNames={clubNames}
       userEmail={user.email ?? ""}
     />

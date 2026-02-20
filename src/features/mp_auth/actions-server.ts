@@ -16,7 +16,7 @@ export async function mpGetMyProfile(): Promise<MpUserProfile | null> {
 
   const { data: profile } = await supabase
     .from("mp_user_profiles")
-    .select("id, email, full_name, role, assigned_club, created_at, updated_at")
+    .select("id, email, full_name, role, assigned_club, is_signboard_manager, created_at, updated_at")
     .eq("id", user.id)
     .single();
 

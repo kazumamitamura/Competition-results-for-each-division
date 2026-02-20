@@ -24,10 +24,11 @@ export async function getUniqueClubNames(): Promise<string[]> {
 }
 
 /**
- * ログインユーザーの mp_user_profiles.assigned_club を更新
+ * ログインユーザーの mp_user_profiles（assigned_club, is_signboard_manager）を更新
  */
 export async function updateUserAssignedClub(
-  assignedClub: string
+  assignedClub: string,
+  isSignboardManager: boolean = false
 ): Promise<{ error?: string }> {
   const supabase = await createClient();
   const {
@@ -37,7 +38,10 @@ export async function updateUserAssignedClub(
 
   const { error } = await supabase
     .from("mp_user_profiles")
-    .update({ assigned_club: assignedClub })
+    .update({
+      assigned_club: assignedClub,
+      is_signboard_manager: isSignboardManager,
+    })
     .eq("id", user.id);
 
   if (error) return { error: error.message };

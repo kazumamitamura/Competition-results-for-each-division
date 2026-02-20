@@ -41,6 +41,8 @@ export interface MpCompetitionResult {
   date?: string | null;
   /** 大会終了日（任意）YYYY-MM-DD */
   end_date?: string | null;
+  /** 看板製作依頼済みかどうか */
+  is_signboard_requested?: boolean;
   created_at: string;
   updated_at: string;
 }
